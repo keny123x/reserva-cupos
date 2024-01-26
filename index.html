@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Cupos Escolares Del Estado Plurinacional De Bolivia</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <style>
+        /* Estilo para ocultar el formulario por defecto */
+        #formulario-alumno-nuevo {
+            display: none;
+        }
+
+        #colegios-disponibles {
+            display: none;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #3f51b5;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button.sin-cupos {
+            background-color: #f44336; /* Rojo */
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Estilo para la disposición de 2 columnas y 3 filas */
+        #lista-colegios {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+        }
+      
+        .colegio {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Reserva de Cupos Escolares Del Estado Plurinacional De Bolivia</h1>
+        <img src="img/Bolivia.jpg" alt="Bolivia" width="200" height="150"> 
+    </header>
+    <main>
+        <section id="botones">
+            <button class="boton-grande" onclick="mostrarFormularioAlumnoNuevo()">Alumno Nuevo</button>
+            <button class="boton-grande" onclick="mostrarColegiosDisponibles()">Alumno Antiguo</button>
+        </section>
+        <section id="filtro-ciudad">
+            <label for="ciudad">Selecciona una ciudad:</label>
+            <select id="ciudad" onchange="filtrarCiudad()">
+                <option value="santa-cruz" selected>Santa Cruz</option>
+                <option value="la-paz">La Paz</option>
+                <option value="cochabamba">Cochabamba</option>
+                <option value="oruro">Oruro</option>
+                <option value="potosi">Potosí</option>
+                <option value="chuquisaca">Chuquisaca</option>
+                <option value="tarija">Tarija</option>
+                <option value="beni">Beni</option>
+                <option value="pando">Pando</option>
+                <!-- Agrega más opciones para otras ciudades de Bolivia -->
+            </select>
+        </section>
+        <!-- Formulario para el alumno nuevo -->
+        <section id="formulario-alumno-nuevo">
+            <h2>Formulario para Alumno Nuevo</h2>
+            <form>
+                <label for="nombre">Nombre:</label><br>
+                <input type="text" id="nombre" required><br>
+                <label for="apellido">Apellido:</label><br>
+                <input type="text" id="apellido" required><br>
+                <label for="ci">Número de CI:</label><br>
+                <input type="text" id="ci" name="ci" maxlength="7" required><br>
+                <label for="sexo">Sexo:</label><br>
+                <select id="sexo" required>
+                    <option value="masculino">Masculino</option>
+                    <option value="femenino">Femenino</option>
+                </select><br>
+                <label for="fecha-nacimiento">Fecha de Nacimiento:</label><br>
+                <input type="date" id="fecha-nacimiento" required><br>
+                <label for="nivel">Nivel Escolar:</label><br>
+                <select id="nivel" required>
+                    <option value="primaria">Primaria</option>
+                    <option value="secundaria">Secundaria</option>
+                </select><br>
+                <!-- Otros campos del formulario -->
+                <button type="button" onclick="mostrarColegiosDisponibles()">Ver Colegios Disponibles</button>
+            </form>
+        </section>
+        <!-- Sección para mostrar los colegios disponibles -->
+        <section id="colegios-disponibles">
+            <h2>Colegios Disponibles</h2>
+            <div id="lista-colegios" class="lista-colegios"></div>
+        </section>
+    </main>
+    <script src="js/script.js"></script>
+    <script>
+        function mostrarFormularioAlumnoNuevo() {
+            var formulario = document.getElementById("formulario-alumno-nuevo");
+            formulario.style.display = "block";
+            formulario.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function mostrarColegiosDisponibles() {
+            var numeroRude = prompt("Ingresa el número de RUDE del alumno antiguo:");
+            if (numeroRude === null || numeroRude === "") {
+                return; // Si el usuario cancela o no ingresa un número RUDE, no hacer nada
+            }
+
+            var ciudadSeleccionada = document.getElementById("ciudad").value;
+            var nivelSeleccionado = document.getElementById("nivel").value;
+            var colegiosDisponibles = obtenerColegiosDisponibles(ciudadSeleccionada, nivelSeleccionado);
+
+            var listaColegios = document.getElementById("lista-colegios");
+            listaColegios.innerHTML = "";
+
+            var cuposDisponibles = 0;
+
+            colegiosDisponibles.forEach(function(colegio) {
+                var colegioElemento = document.createElement("div");
+                colegioElemento.classList.add("colegio");
+                colegioElemento.textContent = colegio.nombre + " - Cupos Disponibles: " + colegio.cuposDisponibles;
+
+                var reservarButton = document.createElement("button");
+                reservarButton.textContent = "Reservar";
+
+                if (colegio.cuposDisponibles > 0 && cuposDisponibles < 2) {
+                    reservarButton.onclick = function() {
+                        colegio.cuposDisponibles--;
+                        alert("Reserva exitosa en " + colegio.nombre);
+                        colegioElemento.textContent = colegio.nombre + " - Cupos Disponibles: " + colegio.cuposDisponibles;
+                    };
+                    cuposDisponibles++;
+                } else {
+                    reservarButton.classList.add("sin-cupos");
+                    reservarButton.onclick = function() {
+                        alert("No hay cupos disponibles en " + colegio.nombre);
+                    };
+                }
+
+                colegioElemento.appendChild(reservarButton);
+                listaColegios.appendChild(colegioElemento);
+            });
+
+            var colegiosDisponiblesSection = document.getElementById("colegios-disponibles");
+            colegiosDisponiblesSection.style.display = "block";
+            colegiosDisponiblesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+     
+
+        function obtenerColegiosDisponibles(ciudad, nivel) {
+            switch (ciudad) {
+                case "santa-cruz":
+                    return nivel === "primaria" ? [
+                        { nombre: "Colegio San Agustín", cuposDisponibles: 5 },
+                        { nombre: "Colegio Santa Cruz", cuposDisponibles: 0 }, // Sin cupos disponibles
+                        { nombre: "Colegio La Salle", cuposDisponibles: 0 } // Sin cupos disponibles
+                    ] : [
+                        { nombre: "Colegio San Calixto", cuposDisponibles: 3 },
+                        { nombre: "Colegio Alemán", cuposDisponibles: 0 }, // Sin cupos disponibles
+                        { nombre: "Colegio Don Bosco", cuposDisponibles: 1 }
+                    ];
+                case "la-paz":
+                    return nivel === "primaria" ? [
+                        { nombre: "Colegio Don Bosco", cuposDisponibles: 3 },
+                        { nombre: "Colegio San Calixto", cuposDisponibles: 0 }, // Sin cupos disponibles
+                        { nombre: "Colegio Alemán", cuposDisponibles: 0 } // Sin cupos disponibles
+                    ] : [
+                        { nombre: "Colegio San Agustín", cuposDisponibles: 5 },
+                        { nombre: "Colegio Santa Cruz", cuposDisponibles: 0 }, // Sin cupos disponibles
+                        { nombre: "Colegio La Salle", cuposDisponibles: 0 } // Sin cupos disponibles
+                    ];
+                // Agrega más casos para otras ciudades de Bolivia
+                default:
+                    return [];
+            }
+        }
+    </script>
+</body>
+</html>
+
+
